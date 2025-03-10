@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import fr.fork_chan.ui.theme.Fork_chanTheme
-import fr.fork_chan.FeedContent
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons

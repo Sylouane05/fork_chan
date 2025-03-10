@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +36,7 @@ class FeedScreen : ComponentActivity() {
 
 @Composable
 fun FeedContent() {
-    val sampleUser = User("1", "John Doe", "johnd", "https://example.com/profile.jpg")
+    val sampleUser = User("1", "John Doe", "john", "https://example.com/profile.jpg")
     val posts = listOf(
         Post("1", sampleUser, "https://example.com/image1.jpg", "Beautiful sunset!", 12, listOf("Nice!", "Wow!")),
         Post("2", sampleUser, null, "No image, just thoughts!", 5, listOf("Great post!"))
@@ -52,7 +51,7 @@ fun FeedContent() {
 
 @Composable
 fun PostItem(post: Post) {
-    var likes by remember { mutableStateOf(post.likes) }
+    var likes by remember { mutableIntStateOf(post.likes) }
 
     Card(
         shape = RoundedCornerShape(8.dp),
