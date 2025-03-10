@@ -61,6 +61,11 @@ dependencies {
 
     //Sean
     implementation(libs.coil.compose)
+    implementation(libs.ui)
+    implementation(libs.androidx.foundation)
+    implementation(libs.material3)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
 
 
 }
