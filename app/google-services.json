@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "884969594770",
+    "project_id": "fork-chan",
+    "storage_bucket": "fork-chan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:884969594770:android:6c11210c97c5f27a81ab4b",
+        "android_client_info": {
+          "package_name": "fr.fork_chan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFwyaXUi70knHQ3LJReC1XwS3nIomL5vg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
