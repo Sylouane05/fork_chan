@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">fork_chan</string>
+    <string name="link_firebase">https://fork-chan-default-rtdb.firebaseio.com</string>
 </resources>
