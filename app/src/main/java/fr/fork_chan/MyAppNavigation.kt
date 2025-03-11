@@ -15,7 +15,7 @@ import fr.fork_chan.models.AuthViewModel
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
-fun Navigation(modifier: Modifier = Modifier) {
+fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
     val authViewModel = AuthViewModel() // Create a single instance to share across screens
 
