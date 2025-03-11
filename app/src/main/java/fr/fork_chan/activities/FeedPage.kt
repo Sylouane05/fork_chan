@@ -28,7 +28,6 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter // Updated Coil API
 import fr.fork_chan.models.AuthState
 import fr.fork_chan.models.AuthViewModel
-import fr.fork_chan.models.Post
 import fr.fork_chan.models.PostViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
