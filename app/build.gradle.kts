@@ -55,6 +55,24 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.navigation.runtime.android)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
+
+
+    implementation ("io.coil-kt:coil-compose:2.0.0")
+
+    // Jetpack Compose
+    implementation ("androidx.compose.ui:ui:1.5.4") // Use the latest stable version
+    implementation ("androidx.compose.foundation:foundation:1.5.4")
+    implementation ("androidx.compose.material3:material3:1.1.2")
+    implementation ("androidx.activity:activity-compose:1.8.2")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+
+   
+    implementation ("com.google.firebase:firebase-firestore-ktx")
+    implementation ("com.google.firebase:firebase-auth-ktx")
+    implementation ("com.google.firebase:firebase-storage-ktx")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

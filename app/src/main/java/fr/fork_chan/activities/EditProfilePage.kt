@@ -21,7 +21,6 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import fr.fork_chan.models.AuthViewModel
-import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -287,7 +286,7 @@ private fun updateUsername(newUsername: String, context: android.content.Context
     }
 }
 
-// Function to update email
+// Function to update email - FIXED to use non-deprecated method
 private fun updateEmail(newEmail: String, password: String, context: android.content.Context, onSuccess: () -> Unit) {
     val user = FirebaseAuth.getInstance().currentUser
 
@@ -297,10 +296,14 @@ private fun updateEmail(newEmail: String, password: String, context: android.con
 
         user.reauthenticate(credential)
             .addOnSuccessListener {
-                // Email update
-                user.updateEmail(newEmail)
+                // Email update using verifyBeforeUpdateEmail which is the non-deprecated method
+                user.verifyBeforeUpdateEmail(newEmail)
                     .addOnSuccessListener {
-                        Toast.makeText(context, "Email updated successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Verification email sent to $newEmail. Please verify to complete the change.",
+                            Toast.LENGTH_LONG
+                        ).show()
                         onSuccess()
                     }
                     .addOnFailureListener { e ->
