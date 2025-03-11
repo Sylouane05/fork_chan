@@ -18,7 +18,7 @@ import fr.fork_chan.models.PostViewModel
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
-fun Navigation(modifier: Modifier = Modifier) {
+fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
     val authViewModel = viewModel<AuthViewModel>() // Use viewModel() for proper lifecycle
     val postViewModel = viewModel<PostViewModel>() // Share a single PostViewModel instance
