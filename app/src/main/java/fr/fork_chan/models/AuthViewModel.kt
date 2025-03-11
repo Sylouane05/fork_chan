@@ -4,22 +4,25 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
+
 
 class AuthViewModel : ViewModel() {
-    // Appel du constructeur de Firebase pour pouvoir utiliser les méthodes d'authentification.
+    // Firebase Authentication instance
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val _authState: MutableLiveData<AuthState> =
-        MutableLiveData(AuthState.Unauthenticated) // Initialisation
+        MutableLiveData(AuthState.Unauthenticated) // Initialization
 
     val authState: LiveData<AuthState> =
-        _authState // Accesseur (pour lire l'état de l'authentification)
+        _authState // Accessor (to read the authentication state)
 
-    // Initialisation de l'état d'authentification (on lance checkStatus quoi)
+    // Initialize authentication state
     init {
         checkStatus()
     }
-    // création de checkStatus pour vérifier l'état de l'authentification
+
+    // Check authentication status
     fun checkStatus() {
         if (auth.currentUser != null) {
             _authState.value = AuthState.Authenticated
@@ -27,10 +30,9 @@ class AuthViewModel : ViewModel() {
             _authState.value = AuthState.Unauthenticated
         }
     }
-    
-    //fonction pour ce login
-    
-    fun login(email : String, password : String) {
+
+    // Login function
+    fun login(email: String, password: String) {
         if (email.isEmpty() || password.isEmpty()) {
             _authState.value = AuthState.Error("Email and password cannot be empty")
             return
@@ -44,44 +46,67 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error(task.exception?.message ?: "Unknown error")
                 }
             }
-        //fonction pour créer un compte :
     }
 
-
-    fun signup(email : String, password : String){
-            if (email.isEmpty() || password.isEmpty()) {
-                _authState.value = AuthState.Error("Email and password cannot be empty")
-                return
-            }
-
-            _authState.value = AuthState.Loading
-            auth.createUserWithEmailAndPassword(email,password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        _authState.value = AuthState.Authenticated
-                    } else {
-                        _authState.value =
-                            AuthState.Error(task.exception?.message ?: "unknown error")
-                    }
-                }
+    // Sign up function
+    fun signup(email: String, password: String, username: String) {
+        if (email.isEmpty() || password.isEmpty()) {
+            _authState.value = AuthState.Error("Email and password cannot be empty")
+            return
         }
 
+        _authState.value = AuthState.Loading
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Set the user's display name
+                    updateUsername(username) {
+                        _authState.value = AuthState.Authenticated
+                    }
+                } else {
+                    _authState.value =
+                        AuthState.Error(task.exception?.message ?: "unknown error")
+                }
+            }
+    }
+
+    // Sign out function
     fun signout() {
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
     }
 
+    // Update username function
+    fun updateUsername(username: String, onComplete: () -> Unit = {}) {
+        val user = auth.currentUser
+        if (user != null) {
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(username)
+                .build()
 
-
-
-
-
-
-
-}
-    sealed class AuthState {
-        object Authenticated : AuthState()
-        object Unauthenticated : AuthState()
-        object Loading : AuthState()
-        data class Error(val message: String) : AuthState()
+            user.updateProfile(profileUpdates)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        onComplete()
+                    }
+                }
+        }
     }
+
+    // Get current user's display name
+    fun getCurrentUsername(): String {
+        return auth.currentUser?.displayName ?: ""
+    }
+
+    // Get current user's email
+    fun getCurrentEmail(): String {
+        return auth.currentUser?.email ?: ""
+    }
+}
+
+sealed class AuthState {
+    object Authenticated : AuthState()
+    object Unauthenticated : AuthState()
+    object Loading : AuthState()
+    data class Error(val message: String) : AuthState()
+}

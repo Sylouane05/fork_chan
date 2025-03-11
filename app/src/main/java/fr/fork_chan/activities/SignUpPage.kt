@@ -35,6 +35,9 @@ fun SignUp(modifier : Modifier = Modifier, navController: NavHostController, aut
     var password by remember {
         mutableStateOf("")
     }
+    var username by remember {
+        mutableStateOf("")
+    }
 
     val  context = LocalContext.current
 
@@ -68,12 +71,18 @@ fun SignUp(modifier : Modifier = Modifier, navController: NavHostController, aut
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = { authViewModel.signup(email,password) },){
+        OutlinedTextField(value = username,
+            label = { Text("Pseudo") },
+            onValueChange = { username = it })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = { authViewModel.signup(email,password,username) }){
             Text(text = "sign up")
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(onClick = { navController.navigate("login") },){
+        TextButton(onClick = { navController.navigate("login") }){
             Text(text = "Already have an account ?")
         }
 
