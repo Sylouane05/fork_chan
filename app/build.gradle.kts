@@ -59,19 +59,19 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
 
 
-    implementation ("io.coil-kt:coil-compose:2.0.0")
+    implementation (libs.coil.compose)
 
     // Jetpack Compose
-    implementation ("androidx.compose.ui:ui:1.5.4") // Use the latest stable version
-    implementation ("androidx.compose.foundation:foundation:1.5.4")
-    implementation ("androidx.compose.material3:material3:1.1.2")
-    implementation ("androidx.activity:activity-compose:1.8.2")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation (libs.ui) // Use the latest stable version
+    implementation (libs.androidx.foundation)
+    implementation (libs.material3)
+    implementation (libs.androidx.activity.compose.v182)
+    implementation (libs.androidx.lifecycle.viewmodel.compose)
 
    
-    implementation ("com.google.firebase:firebase-firestore-ktx")
-    implementation ("com.google.firebase:firebase-auth-ktx")
-    implementation ("com.google.firebase:firebase-storage-ktx")
+    implementation (libs.google.firebase.firestore.ktx)
+    implementation (libs.google.firebase.auth.ktx)
+    implementation (libs.google.firebase.storage.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -81,5 +81,13 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation ("com.google.firebase:firebase-storage-ktx:20.3.0")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3") // For HTTP requests to Imgur
+    implementation ("io.coil-kt:coil-compose:2.0.0")   // For loading images in Jetpack Compose (optional, use Glide if preferred)
+
+    implementation ("com.google.firebase:firebase-auth-ktx:22.1.2")
+    implementation ("com.google.firebase:firebase-firestore-ktx:24.9.0")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("io.coil-kt:coil-compose:2.0.0")
 
 }

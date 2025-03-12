@@ -1,5 +1,7 @@
 package fr.fork_chan.activities
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +55,27 @@ fun PostItem(
         }
     }
 
+    // Update showComments if there are new comments
+    LaunchedEffect(comments) {
+        if (comments.isNotEmpty()) {
+            showComments = true
+        }
+    }
+
+    // Create a remembered state for the decoded bitmap
+    val decodedBitmap = remember(post.imageUrl) {
+        if (!post.imageUrl.startsWith("http", ignoreCase = true) && post.imageUrl.isNotEmpty()) {
+            try {
+                val decodedBytes = Base64.decode(post.imageUrl, Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+            } catch (e: Exception) {
+                null // Return null if decoding fails
+            }
+        } else {
+            null // Return null for remote URLs or empty strings
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,7 +86,7 @@ fun PostItem(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Post header with user info
+            // -- Post header with user info --
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -125,7 +149,7 @@ fun PostItem(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Post description
+            // -- Post description --
             if (post.description.isNotEmpty()) {
                 Text(
                     text = post.description,
@@ -134,26 +158,42 @@ fun PostItem(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Post image
+            // -- Post image --
             if (post.imageUrl.isNotEmpty()) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalContext.current).data(data = post.imageUrl)
-                            .apply(block = fun ImageRequest.Builder.() {
-                                crossfade(true)
-                            }).build()
-                    ),
-                    contentDescription = "Post Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
+                // Handle remote URL
+                if (post.imageUrl.startsWith("http", ignoreCase = true)) {
+                    // Use Coil to load remote URL
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            ImageRequest.Builder(LocalContext.current)
+                                .data(data = post.imageUrl)
+                                .crossfade(true)
+                                .build()
+                        ),
+                        contentDescription = "Post Image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (decodedBitmap != null) {
+                    // Handle base64 image if successfully decoded
+                    Image(
+                        bitmap = decodedBitmap.asImageBitmap(),
+                        contentDescription = "Post Image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Post stats (likes and comments)
+            // -- Post stats (likes & comments) --
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -171,25 +211,20 @@ fun PostItem(
                     modifier = Modifier.padding(start = 4.dp)
                 )
                 Spacer(modifier = Modifier.width(16.dp))
-                /*Icon(
-                    imageVector = Icons.Default.Comment,
-                    contentDescription = "Comments",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(16.dp)
-                )*/
                 Text(
-                    text = "${post.commentCount} comments",
+                    text = "${comments.size} comments", // Use actual comment count from the list
                     color = Color.Gray,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
 
+            // Divider
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp)
             )
 
-            // Action buttons
+            // -- Action buttons --
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -235,7 +270,7 @@ fun PostItem(
 
                 // Share button
                 TextButton(
-                    onClick = { /* Share post */ },
+                    onClick = { /* Implement share if needed */ },
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     Icon(
@@ -251,15 +286,27 @@ fun PostItem(
                 }
             }
 
-            // Comment section
+            // -- Comments section --
             AnimatedVisibility(visible = showComments) {
                 Column(
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    // Existing comments
-                    for (comment in comments) {
-                        CommentItem(comment = comment)
+                    // Display existing comments (if any)
+                    if (comments.isEmpty()) {
+                        Text(
+                            text = "No comments yet. Be the first to comment!",
+                            color = Color.Gray,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    } else {
+                        // Show all comments
+                        comments.forEach { comment ->
+                            CommentItem(comment = comment)
+                        }
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     // Add comment
                     Row(
@@ -298,6 +345,7 @@ fun PostItem(
         }
     }
 }
+
 @Composable
 fun CommentItem(comment: Comment) {
     Row(
@@ -333,16 +381,20 @@ fun CommentItem(comment: Comment) {
         Spacer(modifier = Modifier.width(8.dp))
 
         Column {
-            Text(
-                text = comment.username,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
-            Text(
-                text = comment.text,
-                fontSize = 14.sp,
-                overflow = TextOverflow.Visible
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = comment.username,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = comment.text,
+                    fontSize = 14.sp,
+                    overflow = TextOverflow.Visible
+                )
+            }
+
             comment.createdAt?.let { timestamp ->
                 val date = timestamp.toDate()
                 val formatter = SimpleDateFormat("MMM dd • HH:mm", Locale.getDefault())

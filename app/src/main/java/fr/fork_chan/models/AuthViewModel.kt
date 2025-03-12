@@ -23,7 +23,7 @@ class AuthViewModel : ViewModel() {
     }
 
     // Check authentication status
-    fun checkStatus() {
+    private fun checkStatus() {
         if (auth.currentUser != null) {
             _authState.value = AuthState.Authenticated
         } else {
@@ -77,7 +77,7 @@ class AuthViewModel : ViewModel() {
     }
 
     // Update username function
-    fun updateUsername(username: String, onComplete: () -> Unit = {}) {
+    private fun updateUsername(username: String, onComplete: () -> Unit = {}) {
         val user = auth.currentUser
         if (user != null) {
             val profileUpdates = UserProfileChangeRequest.Builder()
@@ -93,20 +93,11 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    // Get current user's display name
-    fun getCurrentUsername(): String {
-        return auth.currentUser?.displayName ?: ""
-    }
-
-    // Get current user's email
-    fun getCurrentEmail(): String {
-        return auth.currentUser?.email ?: ""
-    }
 }
 
 sealed class AuthState {
-    object Authenticated : AuthState()
-    object Unauthenticated : AuthState()
-    object Loading : AuthState()
+    data object Authenticated : AuthState()
+    data object Unauthenticated : AuthState()
+    data object Loading : AuthState()
     data class Error(val message: String) : AuthState()
 }

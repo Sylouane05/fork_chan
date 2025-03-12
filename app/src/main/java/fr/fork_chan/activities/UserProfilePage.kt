@@ -1,12 +1,13 @@
 package fr.fork_chan.activities
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
@@ -18,13 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import fr.fork_chan.models.AuthState
 import fr.fork_chan.models.AuthViewModel
 import fr.fork_chan.models.PostViewModel
@@ -44,7 +47,6 @@ fun UserProfilePage(
     val authState = authViewModel.authState.observeAsState()
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userPosts by postViewModel.userPosts.observeAsState(emptyList())
-    val allPosts by postViewModel.posts.observeAsState(emptyList())
     val comments by postViewModel.comments.observeAsState(emptyMap())
 
     // Determine if viewing own profile or someone else's
@@ -57,6 +59,11 @@ fun UserProfilePage(
     val username = remember { mutableStateOf(currentUser?.displayName ?: "Username") }
     val email = remember { mutableStateOf(currentUser?.email ?: "email@example.com") }
 
+    // State for profile image
+    val profileImageBitmap = remember { mutableStateOf<ImageBitmap?>(null) }
+    val isLoading = remember { mutableStateOf(false) }
+    val errorMessage = remember { mutableStateOf<String?>(null) }
+
     // Stats for display
     val postCount = userPosts.size
     val followerCount = 0 // Placeholder for future implementation
@@ -66,6 +73,40 @@ fun UserProfilePage(
     LaunchedEffect(profileUserId) {
         if (profileUserId.isNotEmpty()) {
             postViewModel.fetchUserPosts(profileUserId)
+
+            // Load profile image from Firestore
+            isLoading.value = true
+            FirebaseFirestore.getInstance().collection("users")
+                .document(profileUserId)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        // Update username and email if available
+                        document.getString("username")?.let {
+                            username.value = it
+                        }
+                        document.getString("email")?.let {
+                            email.value = it
+                        }
+
+                        // Get profile image from base64
+                        val imageBase64 = document.getString("profileImage")
+                        if (!imageBase64.isNullOrEmpty()) {
+                            try {
+                                val decodedBytes = Base64.decode(imageBase64, Base64.DEFAULT)
+                                val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                                profileImageBitmap.value = bitmap.asImageBitmap()
+                            } catch (e: Exception) {
+                                errorMessage.value = "Failed to load profile image: ${e.message}"
+                            }
+                        }
+                    }
+                    isLoading.value = false
+                }
+                .addOnFailureListener { e ->
+                    errorMessage.value = "Failed to load user data: ${e.message}"
+                    isLoading.value = false
+                }
         }
     }
 
@@ -114,15 +155,21 @@ fun UserProfilePage(
                             .background(Color.LightGray),
                         contentAlignment = Alignment.Center
                     ) {
-                        val profilePic = currentUser?.photoUrl?.toString()
-                        if (!profilePic.isNullOrEmpty()) {
+                        if (isLoading.value) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(40.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else if (profileImageBitmap.value != null) {
+                            // Display the base64 image
                             Image(
-                                painter = rememberAsyncImagePainter(profilePic),
+                                bitmap = profileImageBitmap.value!!,
                                 contentDescription = "Profile Picture",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
+                            // Default icon if no image is available
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Profile Picture",
@@ -152,178 +199,166 @@ fun UserProfilePage(
                         )
                     }
 
+                    // Display error message if any
+                    if (errorMessage.value != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = errorMessage.value!!,
+                            fontSize = 14.sp,
+                            color = Color.Red
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Stats row
-                    //Row(
-                        //modifier = Modifier.fillMaxWidth(),
-                        //horizontalArrangement = Arrangement.SpaceEvenly
-/*) {
-    ProfileStat(label = "Posts", count = postCount.toString())
-    ProfileStat(label = "Followers", count = followerCount.toString())
-    ProfileStat(label = "Following", count = followingCount.toString())
-}*/
+                    // Action buttons
+                    if (isOwnProfile) {
+                        // Own profile actions
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { navController.navigate("edit_profile") },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Edit Profile")
+                            }
 
-Spacer(modifier = Modifier.height(24.dp))
+                            Button(
+                                onClick = { navController.navigate("create_post") },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("New Post")
+                            }
+                        }
 
-// Action buttons
-if (isOwnProfile) {
-    // Own profile actions
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Button(
-            onClick = { navController.navigate("edit_profile") },
-            modifier = Modifier.weight(1f)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Edit Profile")
-        }
+                        Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = { navController.navigate("create_post") },
-            modifier = Modifier.weight(1f)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("New Post")
-        }
-    }
+                        OutlinedButton(
+                            onClick = { authViewModel.signout() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Sign Out")
+                        }
+                    } else {
+                        // Other user profile actions
+                        Button(
+                            onClick = { /* Implement follow functionality */ },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Follow")
+                        }
+                    }
+                }
 
-    Spacer(modifier = Modifier.height(16.dp))
+                // Tabs for Posts and Likes
+                TabRow(
+                    selectedTabIndex = selectedTab.ordinal,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Tab(
+                        selected = selectedTab == ProfileTab.POSTS,
+                        onClick = { selectedTab = ProfileTab.POSTS },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.List,
+                                contentDescription = "Posts"
+                            )
+                        },
+                        text = { Text("Posts") }
+                    )
 
-    OutlinedButton(
-        onClick = { authViewModel.signout() },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text("Sign Out")
-    }
-} else {
-    // Other user profile actions
-    Button(
-        onClick = { /* Implement follow functionality */ },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text("Follow")
-    }
-}
-}
+                }
 
-// Tabs for Posts and Likes
-TabRow(
-selectedTabIndex = selectedTab.ordinal,
-modifier = Modifier.fillMaxWidth()
-) {
-Tab(
-    selected = selectedTab == ProfileTab.POSTS,
-    onClick = { selectedTab = ProfileTab.POSTS },
-    icon = {
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.List,
-            contentDescription = "Posts"
-        )
-    },
-    text = { Text("Posts") }
-)
-Tab(
-    selected = selectedTab == ProfileTab.LIKES,
-    onClick = { selectedTab = ProfileTab.LIKES },
-    icon = {
-        Icon(
-            imageVector = Icons.Default.Favorite,
-            contentDescription = "Likes"
-        )
-    },
-    text = { Text("Likes") }
-)
-}
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-Spacer(modifier = Modifier.height(8.dp))
-}
-
-when (selectedTab) {
-ProfileTab.POSTS -> {
-if (userPosts.isEmpty()) {
-    item {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.List,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "No posts yet",
-                    color = Color.Gray,
-                    fontSize = 18.sp
-                )
+            when (selectedTab) {
+                ProfileTab.POSTS -> {
+                    if (userPosts.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.List,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(48.dp),
+                                        tint = Color.Gray
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "No posts yet",
+                                        color = Color.Gray,
+                                        fontSize = 18.sp
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        items(userPosts) { post ->
+                            PostItem(
+                                post = post,
+                                comments = comments[post.id] ?: emptyList(),
+                                onLikeClick = { postViewModel.likePost(post.id) },
+                                onCommentClick = { postViewModel.fetchComments(post.id) },
+                                onProfileClick = { navController.navigate("profile/$it") },
+                                onAddComment = { comment ->
+                                    postViewModel.addComment(post.id, comment)
+                                },
+                                postViewModel = postViewModel
+                            )
+                        }
+                    }
+                }
+                ProfileTab.LIKES -> {
+                    // Show liked posts (future implementation)
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Favorite,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "No liked posts yet",
+                                    color = Color.Gray,
+                                    fontSize = 18.sp
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-} else {
-    items(userPosts) { post ->
-        PostItem(
-            post = post,
-            comments = comments[post.id] ?: emptyList(),
-            onLikeClick = { postViewModel.likePost(post.id) },
-            onCommentClick = { postViewModel.fetchComments(post.id) },
-            onProfileClick = { navController.navigate("profile/$it") },
-            onAddComment = { comment ->
-                postViewModel.addComment(post.id, comment)
-            },
-            postViewModel = postViewModel
-        )
-    }
-}
-}
-ProfileTab.LIKES -> {
-// Show liked posts (future implementation)
-item {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = Icons.Default.Favorite,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "No liked posts yet",
-                color = Color.Gray,
-                fontSize = 18.sp
-            )
-        }
-    }
-}
-}
-}
-}
-}
 }

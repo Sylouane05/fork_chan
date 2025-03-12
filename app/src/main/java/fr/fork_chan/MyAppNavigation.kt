@@ -18,7 +18,7 @@ import fr.fork_chan.models.PostViewModel
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
-fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
+fun Navigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val authViewModel = viewModel<AuthViewModel>() // Use viewModel() for proper lifecycle
     val postViewModel = viewModel<PostViewModel>() // Share a single PostViewModel instance
@@ -28,7 +28,7 @@ fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         composable("signup") { SignUp(modifier, navController, authViewModel) }
         composable("feed") { FeedPage(navController, authViewModel, postViewModel) }
         composable("profile") { UserProfilePage(navController, authViewModel, postViewModel) }
-        composable("edit_profile") { EditProfilePage(navController, authViewModel) }
+        composable("edit_profile") { EditProfilePage(navController) }
         composable("create_post") { CreatePostPage(navController, postViewModel) } // Added CreatePostPage
     }
 }

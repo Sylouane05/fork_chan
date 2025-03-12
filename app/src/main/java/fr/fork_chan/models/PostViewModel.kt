@@ -1,6 +1,5 @@
 package fr.fork_chan.models
 
-import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,26 +7,22 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.util.*
 
 sealed class PostState {
-    object Idle : PostState()
-    object Loading : PostState()
-    object Success : PostState()
+    data object Idle : PostState()
+    data object Loading : PostState()
+    data object Success : PostState()
     data class Error(val message: String) : PostState()
 }
 
 class PostViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
-    private val storage = FirebaseStorage.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
     private val _postState = MutableLiveData<PostState>(PostState.Idle)
-    val postState: LiveData<PostState> = _postState
 
     private val _posts = MutableLiveData<List<Post>>(emptyList())
     val posts: LiveData<List<Post>> = _posts
@@ -38,27 +33,20 @@ class PostViewModel : ViewModel() {
     private val _comments = MutableLiveData<Map<String, List<Comment>>>(emptyMap())
     val comments: LiveData<Map<String, List<Comment>>> = _comments
 
-    fun createPost(description: String, imageUri: Uri?) {
+    fun createPost(description: String, imageBase64: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _postState.postValue(PostState.Loading)
-
                 val currentUser = auth.currentUser ?: throw Exception("User not authenticated")
 
-                // Upload image if provided
-                val imageUrl = if (imageUri != null) {
-                    val storageRef = storage.reference.child("post_images/${UUID.randomUUID()}")
-                    storageRef.putFile(imageUri).await()
-                    storageRef.downloadUrl.await().toString()
-                } else ""
-
-                // Create post
+                // Create the post using the base64 image string
+                // (You could rename the Post field from imageUrl to imageBase64 if you prefer.)
                 val post = Post(
                     userId = currentUser.uid,
                     username = currentUser.displayName ?: "Anonymous",
                     userProfilePicUrl = currentUser.photoUrl?.toString() ?: "",
                     description = description,
-                    imageUrl = imageUrl
+                    imageUrl = imageBase64 ?: "" // storing base64 string here
                 )
 
                 // Save to Firestore
@@ -73,6 +61,7 @@ class PostViewModel : ViewModel() {
             }
         }
     }
+
 
     fun fetchPosts() {
         viewModelScope.launch(Dispatchers.IO) {
