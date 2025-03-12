@@ -475,7 +475,7 @@ private fun resizeBitmap(bitmap: Bitmap, maxDimension: Int): Bitmap {
 private fun bitmapToBase64(bitmap: Bitmap): String {
     val byteArrayOutputStream = ByteArrayOutputStream()
     // Compress with quality 70% to reduce size
-    bitmap.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream)
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 10, byteArrayOutputStream)
     val byteArray = byteArrayOutputStream.toByteArray()
     return Base64.encodeToString(byteArray, Base64.DEFAULT)
 }

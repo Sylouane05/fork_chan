@@ -1,5 +1,6 @@
 package fr.fork_chan.activities
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
@@ -25,6 +26,20 @@ import androidx.navigation.NavHostController
 import fr.fork_chan.models.PostViewModel
 import java.io.ByteArrayOutputStream
 
+fun compressImage(bitmap: Bitmap, maxSizeKB: Int = 200): ByteArray {
+    var quality = 100
+    val outputStream = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+
+    while (outputStream.toByteArray().size / 1024 > maxSizeKB && quality > 10) {
+        quality -= 10
+        outputStream.reset()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+    }
+
+    return outputStream.toByteArray()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePostPage(
@@ -32,23 +47,18 @@ fun CreatePostPage(
     postViewModel: PostViewModel
 ) {
     var description by remember { mutableStateOf("") }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var selectedImageBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    var selectedImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var base64Image by remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    // Launcher to pick an image from the gallery
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        selectedImageUri = uri
         uri?.let {
             context.contentResolver.openInputStream(uri)?.use { stream ->
                 val bitmap = BitmapFactory.decodeStream(stream)
                 selectedImageBitmap = bitmap
-                // Convert the bitmap to a base64 string
-                val outputStream = ByteArrayOutputStream()
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 100, outputStream)
-                val imageBytes = outputStream.toByteArray()
-                base64Image = Base64.encodeToString(imageBytes, Base64.DEFAULT)
+
+                val compressedBytes = compressImage(bitmap)
+                base64Image = Base64.encodeToString(compressedBytes, Base64.DEFAULT)
             }
         }
     }
@@ -75,7 +85,6 @@ fun CreatePostPage(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Display the selected image or a placeholder
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -83,24 +92,20 @@ fun CreatePostPage(
                     .background(Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                if (selectedImageBitmap != null) {
+                selectedImageBitmap?.let {
                     Image(
-                        bitmap = selectedImageBitmap!!.asImageBitmap(),
+                        bitmap = it.asImageBitmap(),
                         contentDescription = "Selected Image",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                } else {
-                    Text("No Image Selected")
-                }
+                } ?: Text("No Image Selected")
             }
 
-            // Button to launch the image picker
             Button(onClick = { launcher.launch("image/*") }) {
                 Text("Pick Image")
             }
 
-            // Input field for the post description
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -109,16 +114,14 @@ fun CreatePostPage(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
             )
 
-            // Button to create the post
             Button(
                 onClick = {
-                    // Validate that an image and description have been provided
                     if (base64Image.isNotEmpty() && description.isNotEmpty()) {
                         postViewModel.createPost(
                             description = description,
                             imageBase64 = base64Image
                         )
-                        navController.popBackStack() // Return to the previous screen after posting
+                        navController.popBackStack()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
