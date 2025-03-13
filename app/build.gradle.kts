@@ -72,6 +72,8 @@ dependencies {
     implementation (libs.google.firebase.firestore.ktx)
     implementation (libs.google.firebase.auth.ktx)
     implementation (libs.google.firebase.storage.ktx)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.espresso.core)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
