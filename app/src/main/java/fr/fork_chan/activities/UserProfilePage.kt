@@ -121,7 +121,7 @@ fun UserProfilePage(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isOwnProfile) "My Profile" else "User Profile") },
+                title = { Text(if (isOwnProfile) "Mon Profil" else "User Profile") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
@@ -228,7 +228,7 @@ fun UserProfilePage(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Edit Profile")
+                                Text("Modifier le profil")
                             }
 
                             Button(
@@ -241,7 +241,7 @@ fun UserProfilePage(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("New Post")
+                                Text("Créer un Fork")
                             }
                         }
 
@@ -251,7 +251,7 @@ fun UserProfilePage(
                             onClick = { authViewModel.signout() },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Sign Out")
+                            Text("Déconnexion")
                         }
                     } else {
                         // Other user profile actions
@@ -278,7 +278,7 @@ fun UserProfilePage(
                                 contentDescription = "Posts"
                             )
                         },
-                        text = { Text("Posts") }
+                        text = { Text("Mes Forks") }
                     )
 
                 }
