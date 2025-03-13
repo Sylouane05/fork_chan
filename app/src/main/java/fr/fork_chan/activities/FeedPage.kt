@@ -13,7 +13,6 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -156,16 +155,6 @@ fun FeedPage(
                 }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate("create_post") }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Create Post"
-                )
-            }
-        }
     ) { paddingValues ->
         if (posts.isEmpty()) {
             Box(
@@ -213,14 +202,7 @@ fun FeedPage(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             // Assumes that each post has a "userId" field.
-                            ProfilePicture(userId = post.userId, size = 40)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            // Display username (if available in your post model)
-                            Text(
-                                text = post.username,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                            )
+
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 

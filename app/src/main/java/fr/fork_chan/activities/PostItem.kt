@@ -91,29 +91,11 @@ fun PostItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Profile picture
+                // Use the ProfilePicture composable for consistent user images
                 Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.LightGray)
-                        .clickable { onProfileClick(post.userId) },
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.clickable { onProfileClick(post.userId) }
                 ) {
-                    if (post.userProfilePicUrl.isNotEmpty()) {
-                        Image(
-                            painter = rememberAsyncImagePainter(post.userProfilePicUrl),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Profile Picture",
-                            tint = Color.White
-                        )
-                    }
+                    ProfilePicture(userId = post.userId, size = 40)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -354,29 +336,8 @@ fun CommentItem(comment: Comment) {
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.Top
     ) {
-        // Profile picture
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray),
-            contentAlignment = Alignment.Center
-        ) {
-            if (comment.userProfilePicUrl.isNotEmpty()) {
-                Image(
-                    painter = rememberAsyncImagePainter(comment.userProfilePicUrl),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile Picture",
-                    tint = Color.White
-                )
-            }
-        }
+        // Use ProfilePicture composable for comments too
+        ProfilePicture(userId = comment.userId, size = 32)
 
         Spacer(modifier = Modifier.width(8.dp))
 
