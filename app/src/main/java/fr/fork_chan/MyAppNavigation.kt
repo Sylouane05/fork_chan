@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import fr.fork_chan.activities.CreatePostPage
 import fr.fork_chan.activities.EditProfilePage
 import fr.fork_chan.activities.FeedPage
+import fr.fork_chan.activities.ForgotPasswordScreen
 import fr.fork_chan.activities.LoginPage
 import fr.fork_chan.activities.SignUp
 import fr.fork_chan.activities.UserProfilePage
@@ -36,5 +37,11 @@ fun Navigation(modifier: Modifier = Modifier) {
         }
         composable("edit_profile") { EditProfilePage(navController) }
         composable("create_post") { CreatePostPage(navController, postViewModel) }
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                onEmailSent = { },
+                onError = { },
+                navController = navController
+            )}
     }
 }

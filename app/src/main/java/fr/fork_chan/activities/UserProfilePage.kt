@@ -12,7 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -158,6 +158,9 @@ fun UserProfilePage(
                         isFollowing = true
                     }
                 },
+                onEditProfileClick = { navController.navigate("edit_profile") },
+                onCreatePostClick = { navController.navigate("create_post") },
+                onSignOutClick = { authViewModel.signout() },
                 errorMessage = errorMessage.value
             )
 
@@ -199,6 +202,9 @@ fun ProfileHeader(
     isOwnProfile: Boolean,
     isFollowing: Boolean,
     onFollowClick: () -> Unit,
+    onEditProfileClick: () -> Unit,
+    onCreatePostClick: () -> Unit,
+    onSignOutClick: () -> Unit,
     errorMessage: String?
 ) {
     Column(
@@ -252,6 +258,49 @@ fun ProfileHeader(
                 fontSize = 16.sp,
                 color = Color.Gray
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Own profile actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onEditProfileClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Modifier le profil")
+                }
+
+                Button(
+                    onClick = onCreatePostClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Créer un Fork")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = onSignOutClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Déconnexion")
+            }
         } else {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = onFollowClick) {
@@ -267,8 +316,6 @@ fun ProfileHeader(
                 color = Color.Red
             )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
