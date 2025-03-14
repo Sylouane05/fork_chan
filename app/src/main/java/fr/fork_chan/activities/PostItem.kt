@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.google.firebase.auth.FirebaseAuth
 import fr.fork_chan.models.Comment
 import fr.fork_chan.models.Post
 import fr.fork_chan.models.PostViewModel
@@ -50,6 +51,7 @@ fun PostItem(
     var isLiked by remember { mutableStateOf(false) }
     // Flag to prevent the asynchronous like check from overriding the optimistic update.
     var likeClicked by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Check if the user has liked this post initially.
     LaunchedEffect(post.id) {
@@ -109,6 +111,15 @@ fun PostItem(
                             text = formatter.format(date),
                             color = Color.Gray,
                             fontSize = 12.sp
+                        )
+                    }
+                }
+                // Add delete button for post owner
+                if (post.userId == FirebaseAuth.getInstance().currentUser?.uid) {
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Supprimer le post"
                         )
                     }
                 }
@@ -291,6 +302,32 @@ fun PostItem(
                 }
             }
         }
+    }
+
+    // Add delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Supprimer le post") },
+            text = { Text("Êtes-vous sûr de vouloir supprimer ce post ?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        postViewModel.deletePost(post.id)
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Supprimer")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Annuler")
+                }
+            }
+        )
     }
 }
 

@@ -233,4 +233,32 @@ class PostViewModel : ViewModel() {
             }
         }
     }
+
+    // Add deletePost function
+    fun deletePost(postId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val postRef = firestore.collection("posts").document(postId)
+
+                // Delete comments associated with the post
+                val commentQuery = firestore.collection("comments")
+                    .whereEqualTo("postId", postId)
+                    .get()
+                    .await()
+
+                for (commentDoc in commentQuery.documents) {
+                    commentDoc.reference.delete().await()
+                }
+
+                // Delete the post
+                postRef.delete().await()
+
+                // Refresh posts
+                fetchPosts()
+                fetchUserPosts()
+            } catch (e: Exception) {
+                _postState.postValue(PostState.Error(e.message ?: "Erreur inconnue"))
+            }
+        }
+    }
 }
