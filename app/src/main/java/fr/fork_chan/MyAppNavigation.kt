@@ -20,15 +20,21 @@ import fr.fork_chan.models.PostViewModel
 @Composable
 fun Navigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val authViewModel = viewModel<AuthViewModel>() // Use viewModel() for proper lifecycle
-    val postViewModel = viewModel<PostViewModel>() // Share a single PostViewModel instance
+    val authViewModel = viewModel<AuthViewModel>() // Proper lifecycle
+    val postViewModel = viewModel<PostViewModel>() // Shared instance
 
     NavHost(navController = navController, startDestination = "login") {
         composable("login") { LoginPage(modifier, navController, authViewModel) }
         composable("signup") { SignUp(modifier, navController, authViewModel) }
         composable("feed") { FeedPage(navController, authViewModel, postViewModel) }
+        // Own profile
         composable("profile") { UserProfilePage(navController, authViewModel, postViewModel) }
+        // Other user profiles: dynamic route with userId parameter
+        composable("profile/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            UserProfilePage(navController, authViewModel, postViewModel, userId)
+        }
         composable("edit_profile") { EditProfilePage(navController) }
-        composable("create_post") { CreatePostPage(navController, postViewModel) } // Added CreatePostPage
+        composable("create_post") { CreatePostPage(navController, postViewModel) }
     }
 }

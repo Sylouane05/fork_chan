@@ -64,32 +64,18 @@ fun UserProfilePage(
     val isLoading = remember { mutableStateOf(false) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
 
-    // Stats for display
-    val postCount = userPosts.size
-    val followerCount = 0 // Placeholder for future implementation
-    val followingCount = 0 // Placeholder for future implementation
-
-    // Load user posts
+    // Load user posts and profile image
     LaunchedEffect(profileUserId) {
         if (profileUserId.isNotEmpty()) {
             postViewModel.fetchUserPosts(profileUserId)
-
-            // Load profile image from Firestore
             isLoading.value = true
             FirebaseFirestore.getInstance().collection("users")
                 .document(profileUserId)
                 .get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
-                        // Update username and email if available
-                        document.getString("username")?.let {
-                            username.value = it
-                        }
-                        document.getString("email")?.let {
-                            email.value = it
-                        }
-
-                        // Get profile image from base64
+                        document.getString("username")?.let { username.value = it }
+                        document.getString("email")?.let { email.value = it }
                         val imageBase64 = document.getString("profileImage")
                         if (!imageBase64.isNullOrEmpty()) {
                             try {
@@ -110,7 +96,6 @@ fun UserProfilePage(
         }
     }
 
-    // Check authentication state
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("login")
@@ -121,7 +106,7 @@ fun UserProfilePage(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isOwnProfile) "Mon Profil" else "User Profile") },
+                title = { Text(if (isOwnProfile) "Mon Profil" else "Profil de l'utilisateur") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
@@ -161,7 +146,6 @@ fun UserProfilePage(
                                 color = MaterialTheme.colorScheme.primary
                             )
                         } else if (profileImageBitmap.value != null) {
-                            // Display the base64 image
                             Image(
                                 bitmap = profileImageBitmap.value!!,
                                 contentDescription = "Profile Picture",
@@ -169,7 +153,6 @@ fun UserProfilePage(
                                 contentScale = ContentScale.Crop
                             )
                         } else {
-                            // Default icon if no image is available
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Profile Picture",
@@ -190,8 +173,6 @@ fun UserProfilePage(
 
                     if (isOwnProfile) {
                         Spacer(modifier = Modifier.height(8.dp))
-
-                        // Email
                         Text(
                             text = email.value,
                             fontSize = 16.sp,
@@ -199,7 +180,6 @@ fun UserProfilePage(
                         )
                     }
 
-                    // Display error message if any
                     if (errorMessage.value != null) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -213,7 +193,6 @@ fun UserProfilePage(
 
                     // Action buttons
                     if (isOwnProfile) {
-                        // Own profile actions
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -254,12 +233,11 @@ fun UserProfilePage(
                             Text("Déconnexion")
                         }
                     } else {
-                        // Other user profile actions
                         Button(
                             onClick = { /* Implement follow functionality */ },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Follow")
+                            Text("Suivre")
                         }
                     }
                 }
@@ -280,7 +258,6 @@ fun UserProfilePage(
                         },
                         text = { Text("Mes Forks") }
                     )
-
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -296,9 +273,7 @@ fun UserProfilePage(
                                     .height(200.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.List,
                                         contentDescription = null,
@@ -320,19 +295,18 @@ fun UserProfilePage(
                                 post = post,
                                 comments = comments[post.id] ?: emptyList(),
                                 onLikeClick = { postViewModel.likePost(post.id) },
+                                onUnlikeClick = { postViewModel.unlikePost(post.id) },
                                 onCommentClick = { postViewModel.fetchComments(post.id) },
                                 onProfileClick = { navController.navigate("profile/$it") },
                                 onAddComment = { comment ->
                                     postViewModel.addComment(post.id, comment)
                                 },
-                                postViewModel = postViewModel,
-                                onUnlikeClick = TODO()
+                                postViewModel = postViewModel
                             )
                         }
                     }
                 }
                 ProfileTab.LIKES -> {
-                    // Show liked posts (future implementation)
                     item {
                         Box(
                             modifier = Modifier
@@ -340,9 +314,7 @@ fun UserProfilePage(
                                 .height(200.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(
                                     imageVector = Icons.Default.Favorite,
                                     contentDescription = null,
