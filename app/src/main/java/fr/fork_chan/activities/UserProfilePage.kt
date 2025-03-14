@@ -304,7 +304,7 @@ fun ProfileHeader(
         } else {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = onFollowClick) {
-                Text(if (isFollowing) "Unfork" else "Fork")
+                Text(if (isFollowing) "Se défourcher" else "Enfourcher")
             }
         }
 
