@@ -23,7 +23,6 @@ class PostViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
 
     private val _postState = MutableLiveData<PostState>(PostState.Idle)
-    val postState: LiveData<PostState> get() = _postState
 
     private val _posts = MutableLiveData<List<Post>>(emptyList())
     val posts: LiveData<List<Post>> = _posts
