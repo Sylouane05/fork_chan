@@ -30,14 +30,13 @@ import fr.fork_chan.models.AuthState
 import fr.fork_chan.models.AuthViewModel
 import fr.fork_chan.models.PostViewModel
 
-// --- New Composable to display a user's profile picture ---
+// --- Composable to display a user's profile picture ---
 @Composable
 fun ProfilePicture(userId: String, size: Int = 40) {
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Fetch profile image from Firestore (using similar logic as in UserProfilePage)
     LaunchedEffect(userId) {
         FirebaseFirestore.getInstance().collection("users")
             .document(userId)
@@ -79,7 +78,6 @@ fun ProfilePicture(userId: String, size: Int = 40) {
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // Fallback icon if there is no profile image
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Default Profile",
@@ -102,14 +100,13 @@ fun FeedPage(
     val posts by postViewModel.posts.observeAsState(emptyList())
     val comments by postViewModel.comments.observeAsState(emptyMap())
 
-    // Track which posts have their comments section expanded
+    // Track expanded comment sections per post
     val expandedCommentSections = remember { mutableStateMapOf<String, Boolean>() }
 
     LaunchedEffect(Unit) {
         postViewModel.fetchPosts()
     }
 
-    // Fetch comments for all posts initially
     LaunchedEffect(posts) {
         posts.forEach { post ->
             postViewModel.fetchComments(post.id)
@@ -172,13 +169,13 @@ fun FeedPage(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No posts yet",
+                        text = "Aucun Fork ici pour le moment",
                         fontSize = 18.sp,
                         color = Color.Gray
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Create your first post!",
+                        text = "Créez votre premier Fork!",
                         color = Color.Gray
                     )
                 }
@@ -196,29 +193,18 @@ fun FeedPage(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
                     ) {
-                        // Row for the author's profile picture and username
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            // Assumes that each post has a "userId" field.
-
-                        }
+                        // (Optional: add user info row here if needed)
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Get expanded state for this post or default to false
                         val isExpanded = expandedCommentSections[post.id] ?: false
-
-                        // Pass the comments for this post
                         val postComments = comments[post.id] ?: emptyList()
 
-                        // Post item with comments
                         PostItem(
                             post = post,
                             comments = postComments,
                             onLikeClick = { postViewModel.likePost(post.id) },
+                            onUnlikeClick = { postViewModel.unlikePost(post.id) }, // Ensure unlikePost exists in your PostViewModel
                             onCommentClick = {
-                                // Toggle comment section and fetch comments if expanding
                                 val newExpandedState = !(expandedCommentSections[post.id] ?: false)
                                 expandedCommentSections[post.id] = newExpandedState
                                 if (newExpandedState) {
@@ -230,7 +216,6 @@ fun FeedPage(
                             },
                             onAddComment = { comment ->
                                 postViewModel.addComment(post.id, comment)
-                                // Fetch updated comments immediately after adding
                                 postViewModel.fetchComments(post.id)
                             },
                             postViewModel = postViewModel

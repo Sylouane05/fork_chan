@@ -146,7 +146,7 @@ fun EditProfilePage(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Profile") },
+                title = { Text("Modifier le profil") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
@@ -205,7 +205,7 @@ fun EditProfilePage(navController: NavHostController) {
             OutlinedTextField(
                 value = username.value,
                 onValueChange = { username.value = it },
-                label = { Text("Username") },
+                label = { Text("Pseudo") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -238,7 +238,7 @@ fun EditProfilePage(navController: NavHostController) {
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading.value && username.value.isNotEmpty()
             ) {
-                Text("Update Username")
+                Text("Mettre à jour le pseudo")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -248,7 +248,7 @@ fun EditProfilePage(navController: NavHostController) {
                 onClick = { showChangeEmailDialog.value = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Change Email")
+                Text("Modifier l'email")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -258,7 +258,7 @@ fun EditProfilePage(navController: NavHostController) {
                 onClick = { showChangePasswordDialog.value = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Change Password")
+                Text("Modifier le mot de passe")
             }
 
             if (errorMessage.value != null) {
@@ -283,13 +283,13 @@ fun EditProfilePage(navController: NavHostController) {
 
         AlertDialog(
             onDismissRequest = { showChangeEmailDialog.value = false },
-            title = { Text("Change Email") },
+            title = { Text("Modifier votre email") },
             text = {
                 Column {
                     OutlinedTextField(
                         value = newEmail,
                         onValueChange = { newEmail = it },
-                        label = { Text("New Email") },
+                        label = { Text("Nouveau email") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -297,7 +297,7 @@ fun EditProfilePage(navController: NavHostController) {
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Current Password") },
+                        label = { Text("Mot de passe actuel") },
                         modifier = Modifier.fillMaxWidth(),
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true
@@ -319,11 +319,11 @@ fun EditProfilePage(navController: NavHostController) {
                             }
                         }
                     }
-                ) { Text("Update") }
+                ) { Text("Confirmer") }
             },
             dismissButton = {
                 TextButton(onClick = { showChangeEmailDialog.value = false }) {
-                    Text("Cancel")
+                    Text("Annuler")
                 }
             }
         )
@@ -343,7 +343,7 @@ fun EditProfilePage(navController: NavHostController) {
                     OutlinedTextField(
                         value = currentPwd,
                         onValueChange = { currentPwd = it },
-                        label = { Text("Current Password") },
+                        label = { Text("Mot de passe actuel") },
                         modifier = Modifier.fillMaxWidth(),
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true
@@ -352,7 +352,7 @@ fun EditProfilePage(navController: NavHostController) {
                     OutlinedTextField(
                         value = newPwd,
                         onValueChange = { newPwd = it },
-                        label = { Text("New Password") },
+                        label = { Text("Nouveau mot de passe") },
                         modifier = Modifier.fillMaxWidth(),
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true
@@ -361,7 +361,7 @@ fun EditProfilePage(navController: NavHostController) {
                     OutlinedTextField(
                         value = confirmPwd,
                         onValueChange = { confirmPwd = it },
-                        label = { Text("Confirm New Password") },
+                        label = { Text("Confirmer le nouveau mot de passe") },
                         modifier = Modifier.fillMaxWidth(),
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true
@@ -379,11 +379,11 @@ fun EditProfilePage(navController: NavHostController) {
                             Toast.makeText(context, "Passwords don't match", Toast.LENGTH_SHORT).show()
                         }
                     }
-                ) { Text("Update") }
+                ) { Text("Confirmer") }
             },
             dismissButton = {
                 TextButton(onClick = { showChangePasswordDialog.value = false }) {
-                    Text("Cancel")
+                    Text("Annuler")
                 }
             }
         )
@@ -399,10 +399,10 @@ private fun updateUsername(newUsername: String, context: android.content.Context
             .build()
         user.updateProfile(profileUpdates)
             .addOnSuccessListener {
-                Toast.makeText(context, "Username updated successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Pseudo mis à jour avec succès", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to update username: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Echec de la mise à jour du pseudo: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 }
@@ -418,17 +418,17 @@ private fun updateEmail(newEmail: String, password: String, context: android.con
                     .addOnSuccessListener {
                         Toast.makeText(
                             context,
-                            "Verification email sent to $newEmail. Please verify to complete the change.",
+                            "Email de vérification envoyé à $newEmail. Veuillez confirmer le nouveau email.",
                             Toast.LENGTH_LONG
                         ).show()
                         onSuccess()
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(context, "Failed to update email: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Echec de la mise à jour de l'email: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             }
             .addOnFailureListener { e ->
-                Toast.makeText(context, "Authentication failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Authentication echoué: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 }
@@ -442,7 +442,7 @@ private fun updatePassword(currentPassword: String, newPassword: String, context
             .addOnSuccessListener {
                 user.updatePassword(newPassword)
                     .addOnSuccessListener {
-                        Toast.makeText(context, "Password updated successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Mot de passe mis à jour avec succès", Toast.LENGTH_SHORT).show()
                         onSuccess()
                     }
                     .addOnFailureListener { e ->

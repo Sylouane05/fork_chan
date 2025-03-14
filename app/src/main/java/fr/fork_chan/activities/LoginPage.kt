@@ -138,20 +138,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
                 }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-// Mot de passe oublié
-            TextButton(
-                onClick = { /* TODO: Implémenter la récupération du mot de passe */ },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text(
-                    text = "Mot de passe oublié ?",
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
 // Bouton de connexion
             Button(

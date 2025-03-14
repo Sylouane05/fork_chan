@@ -325,7 +325,8 @@ fun UserProfilePage(
                                 onAddComment = { comment ->
                                     postViewModel.addComment(post.id, comment)
                                 },
-                                postViewModel = postViewModel
+                                postViewModel = postViewModel,
+                                onUnlikeClick = TODO()
                             )
                         }
                     }

@@ -39,6 +39,7 @@ fun PostItem(
     post: Post,
     comments: List<Comment>,
     onLikeClick: () -> Unit,
+    onUnlikeClick: () -> Unit,
     onCommentClick: () -> Unit,
     onProfileClick: (String) -> Unit,
     onAddComment: (String) -> Unit,
@@ -47,32 +48,34 @@ fun PostItem(
     var commentText by remember { mutableStateOf("") }
     var showComments by remember { mutableStateOf(false) }
     var isLiked by remember { mutableStateOf(false) }
+    // Flag to prevent the asynchronous like check from overriding the optimistic update.
+    var likeClicked by remember { mutableStateOf(false) }
 
-    // Check if user has liked this post
+    // Check if the user has liked this post initially.
     LaunchedEffect(post.id) {
         postViewModel.checkIfUserLikedPost(post.id) { liked ->
-            isLiked = liked
+            if (!likeClicked) {
+                isLiked = liked
+            }
         }
     }
 
-    // Update showComments if there are new comments
     LaunchedEffect(comments) {
         if (comments.isNotEmpty()) {
             showComments = true
         }
     }
 
-    // Create a remembered state for the decoded bitmap
     val decodedBitmap = remember(post.imageUrl) {
         if (!post.imageUrl.startsWith("http", ignoreCase = true) && post.imageUrl.isNotEmpty()) {
             try {
                 val decodedBytes = Base64.decode(post.imageUrl, Base64.DEFAULT)
                 BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
             } catch (e: Exception) {
-                null // Return null if decoding fails
+                null
             }
         } else {
-            null // Return null for remote URLs or empty strings
+            null
         }
     }
 
@@ -83,26 +86,17 @@ fun PostItem(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // -- Post header with user info --
+        Column(modifier = Modifier.padding(16.dp)) {
+            // -- Post header --
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Use the ProfilePicture composable for consistent user images
-                Box(
-                    modifier = Modifier.clickable { onProfileClick(post.userId) }
-                ) {
+                Box(modifier = Modifier.clickable { onProfileClick(post.userId) }) {
                     ProfilePicture(userId = post.userId, size = 40)
                 }
-
                 Spacer(modifier = Modifier.width(12.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = post.username,
                         fontWeight = FontWeight.Bold,
@@ -118,10 +112,7 @@ fun PostItem(
                         )
                     }
                 }
-
-                IconButton(
-                    onClick = { /* Show options menu */ }
-                ) {
+                IconButton(onClick = { /* Options menu can be added here */ }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "More options"
@@ -133,18 +124,13 @@ fun PostItem(
 
             // -- Post description --
             if (post.description.isNotEmpty()) {
-                Text(
-                    text = post.description,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
+                Text(text = post.description, modifier = Modifier.padding(vertical = 4.dp))
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
             // -- Post image --
             if (post.imageUrl.isNotEmpty()) {
-                // Handle remote URL
                 if (post.imageUrl.startsWith("http", ignoreCase = true)) {
-                    // Use Coil to load remote URL
                     Image(
                         painter = rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalContext.current)
@@ -160,7 +146,6 @@ fun PostItem(
                         contentScale = ContentScale.Crop
                     )
                 } else if (decodedBitmap != null) {
-                    // Handle base64 image if successfully decoded
                     Image(
                         bitmap = decodedBitmap.asImageBitmap(),
                         contentDescription = "Post Image",
@@ -171,7 +156,6 @@ fun PostItem(
                         contentScale = ContentScale.Crop
                     )
                 }
-
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -194,26 +178,33 @@ fun PostItem(
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "${comments.size} comments", // Use actual comment count from the list
+                    text = "${comments.size} commentaires",
                     color = Color.Gray,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
 
-            // Divider
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp)
-            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
             // -- Action buttons --
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Like button
+                // Like button with optimistic UI update.
                 TextButton(
-                    onClick = { onLikeClick() },
+                    onClick = {
+                        if (!isLiked) {
+                            isLiked = true
+                            likeClicked = true
+                            onLikeClick()
+                        } else {
+                            isLiked = false
+                            likeClicked = true
+                            onUnlikeClick()
+                        }
+                    },
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     Icon(
@@ -228,7 +219,7 @@ fun PostItem(
                     )
                 }
 
-                // Comment button
+                // Comment button.
                 TextButton(
                     onClick = {
                         showComments = !showComments
@@ -245,24 +236,7 @@ fun PostItem(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Comment",
-                        color = Color.Gray
-                    )
-                }
-
-                // Share button
-                TextButton(
-                    onClick = { /* Implement share if needed */ },
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Share",
-                        tint = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Share",
+                        text = "Commentaires",
                         color = Color.Gray
                     )
                 }
@@ -270,27 +244,20 @@ fun PostItem(
 
             // -- Comments section --
             AnimatedVisibility(visible = showComments) {
-                Column(
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    // Display existing comments (if any)
+                Column(modifier = Modifier.padding(top = 8.dp)) {
                     if (comments.isEmpty()) {
                         Text(
-                            text = "No comments yet. Be the first to comment!",
+                            text = "Pas de commentaires pour l'instant! Soyez le premier à commenter!",
                             color = Color.Gray,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     } else {
-                        // Show all comments
                         comments.forEach { comment ->
                             CommentItem(comment = comment)
                         }
                     }
-
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    // Add comment
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -300,13 +267,12 @@ fun PostItem(
                         OutlinedTextField(
                             value = commentText,
                             onValueChange = { commentText = it },
-                            placeholder = { Text("Add a comment...") },
+                            placeholder = { Text("Ajouter un commentaire...") },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(56.dp),
                             singleLine = true
                         )
-
                         IconButton(
                             onClick = {
                                 if (commentText.isNotBlank()) {
@@ -318,7 +284,7 @@ fun PostItem(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = "Send Comment"
+                                contentDescription = "Envoyer"
                             )
                         }
                     }
@@ -336,11 +302,8 @@ fun CommentItem(comment: Comment) {
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.Top
     ) {
-        // Use ProfilePicture composable for comments too
         ProfilePicture(userId = comment.userId, size = 32)
-
         Spacer(modifier = Modifier.width(8.dp))
-
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -355,10 +318,9 @@ fun CommentItem(comment: Comment) {
                     overflow = TextOverflow.Visible
                 )
             }
-
             comment.createdAt?.let { timestamp ->
                 val date = timestamp.toDate()
-                val formatter = SimpleDateFormat("MMM dd • HH:mm", Locale.getDefault())
+                val formatter = SimpleDateFormat("dd MMM • HH:mm", Locale.FRENCH)
                 Text(
                     text = formatter.format(date),
                     color = Color.Gray,

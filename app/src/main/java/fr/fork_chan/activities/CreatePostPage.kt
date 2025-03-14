@@ -66,12 +66,12 @@ fun CreatePostPage(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create New Post") },
+                title = { Text("Créer un nouveau Fork") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Retour"
                         )
                     }
                 }
@@ -95,15 +95,15 @@ fun CreatePostPage(
                 selectedImageBitmap?.let {
                     Image(
                         bitmap = it.asImageBitmap(),
-                        contentDescription = "Selected Image",
+                        contentDescription = "Image sélectionnée",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                } ?: Text("No Image Selected")
+                } ?: Text("Aucune image choisie")
             }
 
             Button(onClick = { launcher.launch("image/*") }) {
-                Text("Pick Image")
+                Text("Choisir une image")
             }
 
             OutlinedTextField(
@@ -126,7 +126,7 @@ fun CreatePostPage(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Create Post")
+                Text("Publier le Fork")
             }
         }
     }
