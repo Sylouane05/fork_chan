@@ -30,6 +30,7 @@ import fr.fork_chan.models.AuthState
 import fr.fork_chan.models.AuthViewModel
 import fr.fork_chan.models.PostViewModel
 
+
 @Composable
 fun ProfilePicture(userId: String, size: Int = 40) {
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
