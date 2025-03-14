@@ -30,7 +30,7 @@ import fr.fork_chan.models.AuthState
 import fr.fork_chan.models.AuthViewModel
 import fr.fork_chan.models.PostViewModel
 
-// --- Composable to display a user's profile picture ---
+
 @Composable
 fun ProfilePicture(userId: String, size: Int = 40) {
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
@@ -88,7 +88,6 @@ fun ProfilePicture(userId: String, size: Int = 40) {
     }
 }
 
-// --- Modified FeedPage.kt ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedPage(
@@ -100,7 +99,7 @@ fun FeedPage(
     val posts by postViewModel.posts.observeAsState(emptyList())
     val comments by postViewModel.comments.observeAsState(emptyMap())
 
-    // Track expanded comment sections per post
+    // Track which posts have their comments section expanded
     val expandedCommentSections = remember { mutableStateMapOf<String, Boolean>() }
 
     LaunchedEffect(Unit) {
@@ -137,7 +136,7 @@ fun FeedPage(
                             contentDescription = "Profile"
                         )
                     }
-                    IconButton(onClick = { /* Navigate to messages */ }) {
+                    IconButton(onClick = { navController.navigate("chat_rooms") }) {
                         Icon(
                             imageVector = Icons.Default.Email,
                             contentDescription = "Messages"
@@ -193,17 +192,13 @@ fun FeedPage(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
                     ) {
-                        // (Optional: add user info row here if needed)
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        val isExpanded = expandedCommentSections[post.id] ?: false
-                        val postComments = comments[post.id] ?: emptyList()
-
+                        // PostItem already includes a clickable ProfilePicture in its header.
+                        // Passing onProfileClick navigates to UserProfilePage using the user's ID.
                         PostItem(
                             post = post,
-                            comments = postComments,
+                            comments = comments[post.id] ?: emptyList(),
                             onLikeClick = { postViewModel.likePost(post.id) },
-                            onUnlikeClick = { postViewModel.unlikePost(post.id) }, // Ensure unlikePost exists in your PostViewModel
+                            onUnlikeClick = { postViewModel.unlikePost(post.id) },
                             onCommentClick = {
                                 val newExpandedState = !(expandedCommentSections[post.id] ?: false)
                                 expandedCommentSections[post.id] = newExpandedState

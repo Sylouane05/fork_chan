@@ -89,7 +89,7 @@ dependencies {
 
     implementation ("com.google.firebase:firebase-auth-ktx:22.1.2")
     implementation ("com.google.firebase:firebase-firestore-ktx:24.9.0")
-    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
     implementation ("io.coil-kt:coil-compose:2.0.0")
 
 }
