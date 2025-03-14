@@ -124,7 +124,7 @@ fun UserProfilePage(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isOwnProfile) "Mon Profil" else "User Profile") },
+                title = { Text(if (isOwnProfile) "Mon Profil" else "Profil du fourcheur") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
@@ -329,7 +329,7 @@ fun ProfileTabs(
             selected = selectedTab == ProfileTab.POSTS,
             onClick = { onTabSelected(ProfileTab.POSTS) },
             icon = { Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = "Posts") },
-            text = { Text("Mes Forks") }
+            text = { Text("Forks") }
         )
         Tab(
             selected = selectedTab == ProfileTab.FOLLOWERS,

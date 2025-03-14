@@ -55,7 +55,7 @@ fun ChatRoomsPage(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("l'ordre de la Table") }, // Localized title
+                title = { Text("L'ordre de la Table") }, // Localized title
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
