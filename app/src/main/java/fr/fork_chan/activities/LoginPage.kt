@@ -2,15 +2,36 @@ package fr.fork_chan.activities
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,7 +50,11 @@ import fr.fork_chan.models.AuthState
 import fr.fork_chan.models.AuthViewModel
 
 @Composable
-fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, authViewModel: AuthViewModel) {
+fun LoginPage(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    authViewModel: AuthViewModel
+) {
     // Initialisation des variables :
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -40,7 +65,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
     val context = LocalContext.current
 
     LaunchedEffect(authState.value) {
-        when(authState.value) {
+        when (authState.value) {
             AuthState.Authenticated -> navController.navigate("feed")
             is AuthState.Error -> {
                 Toast.makeText(context, (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
@@ -61,7 +86,6 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
             verticalArrangement = Arrangement.Center
         ) {
             // Logo
-            // Logo
             Image(
                 painter = painterResource(id = R.drawable.forkchan_logo),
                 contentDescription = "Logo ForkChan",
@@ -72,7 +96,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
 
             Spacer(modifier = Modifier.height(32.dp))
 
-// En-tête
+            // En-tête
             Text(
                 text = "Ready to fork ?",
                 fontSize = 28.sp,
@@ -80,10 +104,9 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-
             Spacer(modifier = Modifier.height(32.dp))
 
-// Formulaire
+            // Formulaire
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -140,7 +163,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
 
             Spacer(modifier = Modifier.height(28.dp))
 
-// Bouton de connexion
+            // Bouton de connexion
             Button(
                 onClick = {
                     isLoading = true
@@ -167,9 +190,23 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Bouton "Mot de passe oublié ?"
+            TextButton(
+                onClick = { navController.navigate("forgot_password") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Mot de passe oublié ?",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
-// Texte d'inscription
+            // Texte d'inscription
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
