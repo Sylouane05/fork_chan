@@ -136,7 +136,7 @@ fun FeedPage(
                             contentDescription = "Profile"
                         )
                     }
-                    IconButton(onClick = { /* Navigate to messages */ }) {
+                    IconButton(onClick = { navController.navigate("chat_rooms") }) {
                         Icon(
                             imageVector = Icons.Default.Email,
                             contentDescription = "Messages"
