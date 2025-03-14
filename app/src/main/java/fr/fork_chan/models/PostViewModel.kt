@@ -23,7 +23,6 @@ class PostViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
 
     private val _postState = MutableLiveData<PostState>(PostState.Idle)
-    val postState: LiveData<PostState> get() = _postState
 
     private val _posts = MutableLiveData<List<Post>>(emptyList())
     val posts: LiveData<List<Post>> = _posts
@@ -230,6 +229,34 @@ class PostViewModel : ViewModel() {
                 callback(!likeQuery.isEmpty)
             } catch (e: Exception) {
                 callback(false)
+            }
+        }
+    }
+
+    fun deletePost(postId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+
+                val postRef = firestore.collection("posts").document(postId)
+
+
+                val commentQuery = firestore.collection("comments")
+                    .whereEqualTo("postId", postId)
+                    .get()
+                    .await()
+
+                for (commentDoc in commentQuery.documents) {
+                    commentDoc.reference.delete().await()
+                }
+
+
+                postRef.delete().await()
+
+
+                fetchPosts()
+                fetchUserPosts()
+            } catch (e: Exception) {
+                _postState.postValue(PostState.Error(e.message ?: "Erreur inconnue"))
             }
         }
     }

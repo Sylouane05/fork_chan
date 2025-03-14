@@ -337,7 +337,7 @@ fun EditProfilePage(navController: NavHostController) {
 
         AlertDialog(
             onDismissRequest = { showChangePasswordDialog.value = false },
-            title = { Text("Change Password") },
+            title = { Text("Modifier le mot de passe") },
             text = {
                 Column {
                     OutlinedTextField(
